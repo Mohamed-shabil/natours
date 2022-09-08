@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
-
+const slugify = require('slugify');
 const tourSchema = new mongoose.Schema({
     name: {
       type: String,
       required: [true,'A tours Must have a Name'],
       unique: true
     },
+    slug:String,
     duration:{
       type: Number,
       required:[true,'A tour Must have a Duration'],
@@ -25,7 +26,7 @@ const tourSchema = new mongoose.Schema({
     },
     ratingQuantity:{
       type:Number,
-      default:0
+      // default:0
     }, 
     price:{
       type: Number,
@@ -51,7 +52,29 @@ const tourSchema = new mongoose.Schema({
       default: Date.now()
     },
     startDates:[Date]
+  },{
+    toJSON:{virtuals:true},
+    toObject:{virtuals:true}
   });
+
+  tourSchema.pre('save',function(next){
+    this.slug = slugify(this.name,{lower:true});
+    next();
+  })
+  // tourSchema.post('save',function(doc,next){
+  //   console.log(doc);
+  //   next();
+  // })
+  tourSchema.virtual('durationWeeks').get(function(){
+    return this.duration/7;
+  })
+
+
+  // Query Middleware
+  tourSchema.pre('find',function(next){
+
+    next(); 
+  })
   const Tour = mongoose.model('Tour', tourSchema);
 
   module.exports =Tour;
