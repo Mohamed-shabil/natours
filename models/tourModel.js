@@ -4,7 +4,9 @@ const tourSchema = new mongoose.Schema({
     name: {
       type: String,
       required: [true,'A tours Must have a Name'],
-      unique: true
+      unique: true,
+      maxlength:[40,'a tour must have less or equal then 40 characters'],
+      minlength:[10,'a tour must have grater or equal then 10 characters'] 
     },
     slug:String,
     duration:{
@@ -18,11 +20,17 @@ const tourSchema = new mongoose.Schema({
     },
     difficulty:{
       type:String,
-      required:[true,'A tour Must have a Difficulty']
+      required:[true,'A tour Must have a Difficulty'],
+      enum:{
+        values:['Easy','Medium','Difficult'],
+        message:'Difficulty is either:easy, medium, or difficult'
+      }
     },
     ratingAverage:{
       type:Number,
-      default:4.5
+      default:4.5,
+      min:[1,'Rating must be above 1.0'],
+      max:[5,'Rating must be below 5.0']
     },
     ratingQuantity:{
       type:Number,
@@ -32,7 +40,18 @@ const tourSchema = new mongoose.Schema({
       type: Number,
       required: [true,'A tour Must have a Price'] 
     },
-    priceDiscount:Number,
+    priceDiscount:{
+      type:Number,
+      validate:{
+        
+        // this only points to current doc on New Document creation
+
+        validator: function(value){
+          return value < this.price;
+        },
+        message:'Discount price should be below regular price'
+      }
+    },
     summary:{
       type:String,
       trim: true,
@@ -80,6 +99,14 @@ const tourSchema = new mongoose.Schema({
     this.find({secretTour:{$ne:true}})
     next(); 
   })
+
+  // Aggregation Middleware
+
+  tourSchema.pre('aggregate',function(next){
+    console.log(this.pipeline().unshift({ $match : { secretTour : { $ne:true } } }))
+    next();
+  })
+
   const Tour = mongoose.model('Tour', tourSchema);
 
   module.exports =Tour;
