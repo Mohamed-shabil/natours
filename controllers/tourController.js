@@ -2,6 +2,8 @@ const Tour = require("./../models/tourModel");
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync')
 const AppError = require('../utils/appError');
+
+
 exports.aliasTopTours = (req,res,next)=>{
   req.query.limit='5';
   req.query.sort = '-ratingsAverage,price';
@@ -65,7 +67,7 @@ exports.updateTour = catchAsync(async (req, res,next) => {
   
     const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
-      runValidator:true 
+      runValidators:true 
     });
     if(!tour){
       return next(new AppError('No Tour Found with that ID',404))
