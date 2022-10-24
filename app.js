@@ -19,13 +19,14 @@ app.use(express.static(`${__dirname}/public`))
 
 app.use((req, res,next)=> {
   req.requestTime = new Date().toISOString();
+  console.log(req.headers)
   next();
 });
 
 
 
 app.use('/api/v1/tours',tourRoute);
-app.use('/api/v1/user', userRoute);
+app.use('/api/v1/users', userRoute);
 
 app.all('*',(req,res,next)=>{
   next(new AppError(`Cant find ${req.originalUrl} on this server`,404) );
