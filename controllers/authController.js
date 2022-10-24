@@ -90,9 +90,9 @@ exports.protect  = catchAsync(async (req, res,next)=>{
     
 
     // the code is not working iam working on it 
-    if(freshUser.changedPasswordAfter(decoded.iat)){
-        return next(new AppError('User recently Changed password ! please log in again.',401));
-    }
+    // if(freshUser.changedPasswordAfter(decoded.iat)){
+    //     return next(new AppError('User recently Changed password ! please log in again.',401));
+    // }
 
     
     next();
