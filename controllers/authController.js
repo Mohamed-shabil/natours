@@ -80,8 +80,8 @@ exports.protect  = catchAsync(async (req, res,next)=>{
     console.log(decoded)
 
     // 3. Check if user still exists
-    const freshUser = User.findById(decoded.id)
-    if(!freshUser){
+    const CurrentUser = User.findById(decoded.id)
+    if(!CurrentUser){
         return next(new AppError('The user belonging to this token is does no longer exist.'))
     }
 
@@ -90,10 +90,11 @@ exports.protect  = catchAsync(async (req, res,next)=>{
     
 
     // the code is not working iam working on it 
-    // if(freshUser.changedPasswordAfter(decoded.iat)){
-    //     return next(new AppError('User recently Changed password ! please log in again.',401));
-    // }
+    if(CurrentUser.changedPasswordAfter(decoded.iat)){
+        return next(new AppError('User recently Changed password ! please log in again.',401));
+    }
 
-    
+    // Grand Access to protected Route
+    req.user = CurrentUser;
     next();
 });
