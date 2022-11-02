@@ -16,12 +16,14 @@ exports.signup = catchAsync( async(req,res,next)=>{
     // don't push the req.body directly to db because the the hackers can add any kind of to the data the req.body
     // so don't use User.create(req.body);
 
+    console.log(req.user.role);
     const newUser = await User.create({
         name:req.body.name,
         email:req.body.email,
         password:req.body.password,
         passwordConfirm:req.body.passwordConfirm,
-        passwordChangedAt:req.body.passwordChangedAt
+        passwordChangedAt:req.body.passwordChangedAt,
+        role:req.body.role
     });
 
     const token = signToken();
@@ -90,11 +92,21 @@ exports.protect  = catchAsync(async (req, res,next)=>{
     
 
     // the code is not working iam working on it 
-    if(CurrentUser.changedPasswordAfter(decoded.iat)){
-        return next(new AppError('User recently Changed password ! please log in again.',401));
-    }
+    // if(CurrentUser.changedPasswordAfter(decoded.iat)){
+    //     return next(new AppError('User recently Changed password ! please log in again.',401));
+    // }
 
     // Grand Access to protected Route
     req.user = CurrentUser;
     next();
 });
+
+exports.restrictTo = (...roles)=>{
+    return (req,  res,next)=>{
+        //  roles ['admin','lead-guide']. roles='user'
+        console.log(req.user.role);
+        if(!roles.includes(req.user.role)){
+            return next(new AppError('You do not have permission to perform this action',403));
+        }
+    }
+} 
