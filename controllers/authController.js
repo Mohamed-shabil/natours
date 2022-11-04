@@ -16,7 +16,6 @@ exports.signup = catchAsync( async(req,res,next)=>{
     // don't push the req.body directly to db because the the hackers can add any kind of to the data the req.body
     // so don't use User.create(req.body);
 
-    console.log(req.user.role);
     const newUser = await User.create({
         name:req.body.name,
         email:req.body.email,
@@ -97,16 +96,22 @@ exports.protect  = catchAsync(async (req, res,next)=>{
     // }
 
     // Grand Access to protected Route
+    
+
     req.user = CurrentUser;
     next();
+
 });
 
 exports.restrictTo = (...roles)=>{
-    return (req,  res,next)=>{
+    return (req,res,next)=>{
         //  roles ['admin','lead-guide']. roles='user'
-        console.log(req.user.role);
-        if(!roles.includes(req.user.role)){
-            return next(new AppError('You do not have permission to perform this action',403));
+        
+        console.log(req.user.tree);
+
+        if(!roles.includes('admin','lead-guide')){
+            return next( new AppError('You do not have permission to perform this action',403 ));
         }
+        next();
     }
 } 

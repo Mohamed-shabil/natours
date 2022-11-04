@@ -16,7 +16,7 @@ const userSchema= new mongoose.Schema({
     },
     photo:String,
     role:{
-        type:String,
+        type: String,
         // Enum for predefine some value for this key as shown in below
         enum:['user','guide','lead-guide','admin'],
         default:'user'
