@@ -81,8 +81,8 @@ exports.protect  = catchAsync(async (req, res,next)=>{
     console.log(decoded)
 
     // 3. Check if user still exists
-    const CurrentUser = User.findById(decoded.id)
-    if(!CurrentUser){
+    const currentUser = User.findById(decoded.id)
+    if(!currentUser){
         return next(new AppError('The user belonging to this token is does no longer exist.'))
     }
 
@@ -91,14 +91,14 @@ exports.protect  = catchAsync(async (req, res,next)=>{
     
 
     // the code is not working iam working on it 
-    // if(CurrentUser.changedPasswordAfter(decoded.iat)){
+    // if(currentUser.changedPasswordAfter(decoded.iat)){
     //     return next(new AppError('User recently Changed password ! please log in again.',401));
     // }
 
     // Grand Access to protected Route
     
 
-    req.user = CurrentUser;
+    req.user = currentUser;
     next();
 
 });
@@ -115,3 +115,22 @@ exports.restrictTo = (...roles)=>{
         next();
     }
 } 
+
+exports.forgotPassword = catchAsync(async(req,res,next)=>{
+    // 1 - get user based on POSTed email
+
+    const user = await User.findOne({email:req.body.email})
+    if(!user){
+        return next(new AppError('There is no user with email address',404));
+    }
+
+    // 2 - generate the randon reset tokens
+
+    const resetToken = user.createPasswordResetToken(); 
+    await user.save({ validateBeforeSave : false }); 
+
+
+    // 3 - send it to users email
+})
+exports.resetPassword = (req,res,next)=>{
+}
