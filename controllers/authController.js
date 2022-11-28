@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const {promisify} = require('util')
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -11,6 +12,19 @@ const signToken = id=>{
     return jwt.sign({id},process.env.JWT_SECRET,{
         expiresIn : process.env.JWT_EXPIRES_IN
     });
+}
+
+const createSendToken = (user, statusCode, res)=>{
+    const token = signToken(user.id);
+
+    res.status(statusCode).json({
+        status:'SUCCESS',
+        token,
+        data:{
+            user
+        }
+  
+    })
 }
 
 exports.signup = catchAsync( async(req,res,next)=>{
@@ -27,16 +41,7 @@ exports.signup = catchAsync( async(req,res,next)=>{
         role:req.body.role
     });
 
-    const token = signToken();
-
-    res.status(201).json({
-        status:'SUCCESS',
-        token,
-        data:{
-            user: newUser
-        }
-  
-    })
+    createSendToken(newUser,201,res);
 })
 
 exports.login = catchAsync( async(req,res,next)=>{
@@ -48,27 +53,18 @@ exports.login = catchAsync( async(req,res,next)=>{
     }
     // 2 check if user exist && password is correct
     const user = await User.findOne({email}).select('+password');
-    console.log(user);
 
-     
     // the currectPassword function only runs when the user is exist, that way we can reduce the load of the app
-
-    if(!user ||!(await user.correctPassword(password,user.password))){
+    
+    if(!user||!(await user.correctPassword(password,user.password))){
         return next(new AppError('Incorrect email or password',401));
-
         // -> the status code 401 indicate unautherisation
     }
-
     // 3 if everything is okay then sendback the token to the client
-
-    const token = signToken(user._id);
-    res.status(200).json({
-        status: "success",
-        token
-    })
+    createSendToken(user,200,res);
 })
 
-exports.protect  = catchAsync(async (req, res,next)=>{
+exports.protect = catchAsync(async (req, res,next)=>{
 
     let token;
     // 1. Getting token and check of it's there
@@ -80,10 +76,13 @@ exports.protect  = catchAsync(async (req, res,next)=>{
     }
     // 2. Varification token
     const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET);
+    
     console.log(decoded)
 
     // 3. Check if user still exists
-    const currentUser = User.findById(decoded.id)
+    const currentUser = await User.findById(decoded.id)
+    console.log(currentUser)
+
     if(!currentUser){
         return next(new AppError('The user belonging to this token is does no longer exist.'))
     }
@@ -98,19 +97,14 @@ exports.protect  = catchAsync(async (req, res,next)=>{
     // }
 
     // Grand Access to protected Route
-    
-
     req.user = currentUser;
+    
     next();
 
 });
-
 exports.restrictTo = (...roles)=>{
     return (req,res,next)=>{
         //  roles ['admin','lead-guide']. roles='user'
-        
-        console.log(req.user.tree);
-
         if(!roles.includes('admin','lead-guide')){
             return next( new AppError('You do not have permission to perform this action',403));
         }
@@ -180,9 +174,28 @@ exports.resetPassword = catchAsync( async(req,res,next)=>{
     // 3- Update changedPasswordAt property for the user 
 
     // 4- Log the user in, send JWT
-    const token = signToken(user._id);
-    res.status(200).json({
-        status: "success",
-        token
-    })
+    createSendToken(user,200,res);
+})
+
+exports.updatePassword = catchAsync(async (req, res, next)=>{
+    // 1 - get the user from collection 
+
+    const user = await User.findById(req.user.id).select('+password')
+
+    // 2 - check if the POSTed Current password is correct
+      if(!(await user.correctPassword(req.body.passwordCurrent,user.password))){
+        return next( new AppError('Your current password is Wrong.',401))
+      }
+
+    // 3 -  If the password is currect  , update Password 
+
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    await user.save();
+
+    // User.findByIdAndUpdate is never use in this case because the instance functions and validator not works if the the findByIdAndUpdate works
+    
+    // 4 - log user in , send JWT
+    createSendToken(user,200,res);
+    next();
 })

@@ -12,6 +12,11 @@ exports.getAllUser = catchAsync(async(req, res) => {
     },
   }); 
   });
+
+
+exports.updateMe = (req,res)=>{
+  
+}
   
 exports.getUser = (req, res) => {
     res.status(500).json({
