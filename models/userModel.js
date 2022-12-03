@@ -89,7 +89,6 @@ userSchema.methods.correctPassword = async function(candidatePassword,userPasswo
 
 
 userSchema.methods.changedPasswordAfter= function(JWTTimestamp){
-    console.log("Iam working");
     if(this.passwordChangedAt){
 
        const changedTimestamp = parseInt(this.passwordChangedAt.getTime()/1000,10);
