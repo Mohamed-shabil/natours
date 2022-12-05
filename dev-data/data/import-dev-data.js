@@ -1,4 +1,4 @@
-const fs=require("fs");
+const fs = require('fs');
 const mongoose = require('mongoose');
 const dotenv=require('dotenv');
 const Tour = require('./../../models/tourModel') 
@@ -9,20 +9,44 @@ const DB =process.env.DATABASE.replace('<PASSWORD>',process.env.DATABASE_PASSWOR
 mongoose.connect(DB,{
   useNewUrlParser:true,
   useCreateIndex:true,
-  useFindAndModify: false
+  useFindAndModify: false,
+  useUnifiedTopology: true
 })
 .then( ()=>{console.log('DB Connection Successful !');})   
 
 // Read Json File
 
-const tours = JSON.parsefs.readFileSync('tours-simple.jon','utf-8');
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/tours.json`, 'utf-8')
+  );
 
 // Import Data Into DB
 
   const importData = async ()=>{
     try{
-        await Tour.create(tours)
+        await Tour.create(tours);
+        console.log('Data Successfully loaded')
     }catch(err){
        console.log(err);
     }
+    process.exit();
+}
+
+// DELETE ALL DATA FROM DBRef
+
+const deleteData = async()=>{
+  try{
+    await Tour.deleteMany();
+    console.log('Data Successfully deleted');
+  }catch(err){
+    console.log(err);
+  }
+  process.exit();
+}
+
+
+if(process.argv[2]==='--import'){
+  importData();
+}else if(process.argv[2]==='--delete'){
+  deleteData();
 }
