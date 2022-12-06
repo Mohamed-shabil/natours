@@ -132,16 +132,27 @@ const tourSchema = new mongoose.Schema({
   //   console.log(doc);
   //   next();
   // })
+
   tourSchema.virtual('durationWeeks').get(function(){
     return this.duration/7;
   })
 
+  tourSchema.pre(/^find/,function(next){
+    this.populate({
+      path:'guides',
+      select:'-__v -passwordChangedAt'
+    });
+    next();
+  })
 
   // Query Middleware
   tourSchema.pre(/^find/,function(next){
-    this.find({secretTour:{$ne:true}})
+    this.find({secretTour:{$ne:true}});
+    this.start = Date.now();
     next(); 
   })
+
+
 
   // Aggregation Middleware
 
