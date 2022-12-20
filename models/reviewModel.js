@@ -1,6 +1,7 @@
 // Review / rating / createdAt / ref to tour / ref to user
 
 const mongoose = require("mongoose");
+const Tour = require('./tourModel')
 
 const reviewSchema = new mongoose.Schema({
   review: {
@@ -33,6 +34,10 @@ const reviewSchema = new mongoose.Schema({
 }
 );
 
+
+// Each Combination of tour and user has always to be unique
+reviewSchema.index({ tour:1, user:1 },{ unique:true });
+
 reviewSchema.pre(/^find/,function(next){
   this.populate({
     path:'tour',
@@ -42,6 +47,49 @@ reviewSchema.pre(/^find/,function(next){
     select:'name photo'
   })
   next();
+})
+
+
+reviewSchema.statics.calcAverageRatings = async function(tourId){
+  const stats =await this.aggregate([
+    {
+      $match:{tour:tourId} 
+    },
+    {
+      $group:{
+        _id:'$tour',
+        // add one foreach tour that was matched in the previous step
+        nRating:{ $sum : 1 },   
+        avgRating:{ $avg :'$rating'}
+      }
+    },    
+  ]);
+  console.log(stats);
+
+  await Tour.findByIdAndUpdate(tourId,{
+    ratingsQuantity:stats[0].nRating,
+    ratingsAverage:stats[0].avgRating
+  });
+}
+
+reviewSchema.post('save',function(next){
+  // this point to current review
+
+  // this.tour inside the calcAverageRatings is the tour id that passed in the calcAverageRatings function
+  this.constructor.calcAverageRatings(this.tour);
+});
+
+
+
+reviewSchema.pre(/^findOneAnd/, async function(next){
+  this.r = await this.findOne();
+  console.log(this.r);  
+  next();
+})
+
+reviewSchema.post(/^findOneAnd/, async function(){
+  // this.r = await this.findOne(); does NOT work here, query has already executed
+  await this.r.constructor.calcAverageRatings(this.r.tour);
 })
 
 

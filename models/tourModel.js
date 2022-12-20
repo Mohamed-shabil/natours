@@ -28,15 +28,15 @@ const tourSchema = new mongoose.Schema({
         message:'Difficulty is either: easy, medium, or difficult'
       }
     },
-    ratingAverage:{
+    ratingsAverage:{
       type:Number,
       default:4.5,
       min:[1,'Rating must be above 1.0'],
       max:[5,'Rating must be below 5.0']
     },
-    ratingQuantity:{
+    ratingsQuantity:{
       type:Number,
-      // default:0
+      default:0
     }, 
     price:{
       type: Number,
@@ -115,13 +115,8 @@ const tourSchema = new mongoose.Schema({
 
 
 
-  // DOCUMENT MIDDLEWARE : Runs before .save() and .create()
-
-  // tourSchema.pre('save',async function(next){
-  //   const guidesPromises = this.guides.map(async id=> await User.findById(id));
-  //   this.guides = await Promise.all(guidesPromises);
-  //   next();
-  // })
+  tourSchema.index({ price: 1 ,ratingsAverage: - 1});
+  tourSchema.index({ slug : 1 });
 
   tourSchema.pre('save',function(next){
     this.slug = slugify(this.name,{lower:true});
