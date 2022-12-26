@@ -57,7 +57,7 @@ exports.getMonthlyPlan = catchAsync(async (req, res,next)=>{
             $gte: new Date(`${year}-01-01`), 
             $lte:  new Date(`${year}-12-31`)
           }
-        }
+        } 
       },
       {
         $group:{
@@ -116,4 +116,45 @@ exports.getToursWithin = catchAsync(async (req,res,next) =>{
       data:tours
     }
   }); 
+})
+
+exports.getDistances = catchAsync(async (req,res,next)=>{
+  console.log(req.params);
+  const { latlng , unit } = req.params;
+  console.log(latlng)
+  // const latlng = '34.111745,-118.113491'
+  const [lat,lng] = latlng.split(',');
+
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+
+  if(!lat || !lng){
+    next(new AppError('Please provide the latitude and langitude in the format lat,lng',400))
+  }
+
+  const distances = await Tour.aggregate([
+    {
+      $geoNear:{
+        // near is the point from which to calculate the distances so all the distances will be calculated from this point 
+        near : {
+          type: 'point',
+          coordinates : [lng * 1 , lat * 1]
+        },
+        distanceField : 'distance',
+        distanceMultiplier: multiplier
+      }
+    },
+    {
+      $project:{ // project help to show only certain detail as we define
+        distance :1 ,
+        name:1,
+    }
+    }
+  ])
+
+  res.status(200).json({
+    status:'success',
+    data:{
+      data:distances
+    }
+  });
 })
