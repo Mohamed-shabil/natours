@@ -1,3 +1,5 @@
+
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit');
@@ -11,6 +13,7 @@ const globalErrorHandler = require('./controllers/errorController');
 const tourRoute = require('./Router/tourRoutes'); 
 const userRoute = require('./Router/userRoutes'); 
 const reviewRoute = require('./Router/reviewRoutes')
+const viewRoute = require('./Router/viewRoutes')
 const app = express();
 
 
@@ -19,10 +22,18 @@ app.use(express.json());
 console.log(process.env.NODE_ENV);
 // 1 - Global Middlewares  
 
+// Serving Static Files 
+app.use(express.static(path.join(__dirname,'public')));
+
+app.set('view engine','pug');
+app.set('views', path.join(__dirname,'views'))
+
 // Developement Logging
 if(process.env.NODE_ENV === 'development'){
   app.use(morgan("dev"));
 }
+
+
 
 // Set HTTP Headers 
 app.use(helmet());
@@ -54,8 +65,6 @@ app.use(hpp({
   'price']
 }));
 
-// Serving Static Files 
-app.use(express.static(`${__dirname}/public`));
 
 // Test Middleware 
 app.use((req, res,next)=> {
@@ -64,6 +73,10 @@ app.use((req, res,next)=> {
   next();
 });
 
+
+// Routes 
+
+app.use('/',viewRoute);
 app.use('/api/v1/tours',tourRoute);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/reviews',reviewRoute);
