@@ -7,7 +7,7 @@ const helmet = require('helmet')
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean'); 
 const hpp = require('hpp');
-
+const cors = require('cors')
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const tourRoute = require('./Router/tourRoutes'); 
@@ -18,6 +18,7 @@ const app = express();
 
 
 app.use(express.json());
+
 
 console.log(process.env.NODE_ENV);
 // 1 - Global Middlewares  
@@ -36,7 +37,7 @@ if(process.env.NODE_ENV === 'development'){
 
 
 // Set HTTP Headers 
-app.use(helmet());
+// app.use(helmet());
 
 // Limit Request From Same API
 const limiter = rateLimit({
