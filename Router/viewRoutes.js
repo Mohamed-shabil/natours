@@ -5,6 +5,11 @@ const router = express.Router();
 
 router.get("/",viewController.getOverview);
 
+router
+    .route('/login')
+    .get(viewController.getLoginForm)
+    // .post(viewController.)
+
 router.get("/tour/:slug",viewController.getTour);
 
 
