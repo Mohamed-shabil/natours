@@ -75,35 +75,39 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 // only for rendered pages , no errors!
-
-exports.isLoggedIn = catchAsync(async (req, res, next) => {
+exports.isLoggedIn = async (req, res, next) => {
   if (req.cookies.jwt) {
     // 1- Varify the token 
 
-    const decoded = await promisify(jwt.verify)(req.cookies.jwt, process.env.JWT_SECRET);
+    try{
+      const decoded = await promisify(jwt.verify)(req.cookies.jwt, process.env.JWT_SECRET);
 
-    console.log(decoded);
-
-    // 2- Check if user still exists
-    const currentUser = await User.findById(decoded.id);
-
-    if (!currentUser) {
+      console.log(decoded);
+  
+      // 2- Check if user still exists
+      const currentUser = await User.findById(decoded.id);
+  
+      if (!currentUser) {
+        return next();
+      }
+  
+      // 3. check if user changed password after the token was issued
+  
+      // the code is not working iam working on it
+      // if(currentUser.changedPasswordAfter(decoded.iat)){
+      //     return next(new AppError('User recently Changed password ! please log in again.',401));
+      // }
+  
+      // THERE IS A LOGGED IN USER
+      res.locals.user = currentUser;
       return next();
     }
-
-    // 3. check if user changed password after the token was issued
-
-    // the code is not working iam working on it
-    // if(currentUser.changedPasswordAfter(decoded.iat)){
-    //     return next(new AppError('User recently Changed password ! please log in again.',401));
-    // }
-
-    // THERE IS A LOGGED IN USER
-    res.locals.user = currentUser;
-    return next();
+    catch(err){
+      return next();
+    }
   }
   next();
-});
+};
 
 
 exports.logout = catchAsync(async (req, res, next )=>{
