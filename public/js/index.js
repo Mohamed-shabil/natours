@@ -3,10 +3,13 @@ import { displayMap } from './mapbox';
 import { login, logout } from './login';
 
 // DOM Elements
-const mapBox = document.getElementById('map');
-const loginForm = document.querySelector('.form');
-const logoutBtn = document.querySelector('.nav__el--logout ')
 
+console.log('Its Workingn from index .js')
+
+
+const mapBox = document.getElementById('map');
+const loginForm = document.querySelector('.form--login');
+const logoutBtn = document.querySelector('.nav__el--logout ')
 
 // Delegation
 if (mapBox) {

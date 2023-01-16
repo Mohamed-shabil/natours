@@ -6682,28 +6682,23 @@ var displayMap = function displayMap(locations) {
     container: "map",
     style: "mapbox://styles/developernode23/clckuofg6001b14t2h3vgbu2l",
     scrollZoom: false
-    // center:[-118.113491,34.111745],
-    // zoom:10,
-    // interactive:false,
   });
-
   var bounds = new mapboxgl.LngLatBounds();
   locations.forEach(function (loc) {
-    // Create Marker
-    var el = document.createElement("div");
-    el.className = "marker";
+    // Create marker
+    var el = document.createElement('div');
+    el.className = 'marker';
 
-    // Add Marker
+    // Add marker
     new mapboxgl.Marker({
       element: el,
-      anchor: "bottom"
+      anchor: 'bottom'
     }).setLngLat(loc.coordinates).addTo(map);
 
-    //Add Popup
-
+    // Add popup
     new mapboxgl.Popup({
       offset: 30
-    }).setLngLat(loc.coordinates).setHTML("<p>Day ".concat(loc.day, ":").concat(loc.description, "</p>")).addTo(map);
+    }).setLngLat(loc.coordinates).setHTML("<p>Day ".concat(loc.day, ": ").concat(loc.description, "</p>")).addTo(map);
 
     // Extend map bounds to include current location
     bounds.extend(loc.coordinates);
@@ -12228,7 +12223,7 @@ var _mapbox = require("./mapbox");
 var _login = require("./login");
 // DOM Elements
 var mapBox = document.getElementById('map');
-var loginForm = document.querySelector('.form');
+var loginForm = document.querySelector('.form--login');
 var logoutBtn = document.querySelector('.nav__el--logout ');
 
 // Delegation
@@ -12270,7 +12265,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60803" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53116" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
@@ -12415,4 +12410,3 @@ function hmrAcceptRun(bundle, id) {
   }
 }
 },{}]},{},["../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js","index.js"], null)
-//# sourceMappingURL=/bundel.js.map

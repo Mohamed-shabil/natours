@@ -24,56 +24,79 @@ const handleJWTExpiredError = err => new AppError('Your Token has expired ! Plea
 
 
 const sendErrorDev = (err,req,res) => {
-  // Api 
+  //A -  API
   console.log(req.originalUrl);
 
   if(req.originalUrl.startsWith('/api')){
-    res.status(err.statusCode).json({
+      return res.status(err.statusCode).json({
       status: err.status,
       error: err,
       message: err.message,
       stack: err.stack,
     });
   }
-  else{
-  //  RENDERED WEBSITE 
-    res.status(err.statusCode).render('error',{
+  // B RENDERED WEBSITE 
+
+  console.error('Error 🔥', err);
+   // A Operational, trusted error : send message to client 
+   return res.status(err.statusCode).render('error',{
       title:'Something Went Wrong !',
       msg: err.message
     })
-  }
 };
 
 const sendErrorprod = (err, req,res) => {
-  // Operational, trusted error : send message to client 
-  if (err.isOperational) {
-    res.status(err.statusCode).json({
-      status: err.status,
-      message: err.message,
-    });
-  // Programming or other unknown error:don't leak error details 
-  } 
-  else {
+  // A- for API
+  if(req.originalUrl.startsWith('/api')){
+    // A Operational, trusted error : send message to client 
+    if (err.isOperational) {
+      return res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message,
+      });
+    } 
+    //B  Programming or other unknown error:don't leak error details 
     // 1 - Log error
     console.error('Error 🔥', err);
+    // 2 -some generic messages
+    return res.status(500).json({
+      status: "error",
+      message: "Something Went very Wrong",
+    });
+  }
+
+  
+//B - rendered Website 
+  if (err.isOperational) {
+    res.status(err.statusCode).render('error',{
+        title:'Something went wrong',
+        msg: 'Please try again later .'  
+        });
+      // Programming or other unknown error:don't leak error details 
+  } 
+  else{
+    // 1 - Log error
+    console.error('Error 🔥', err);
+    // 2 -send generic messages
     res.status(500).json({
       status: "error",
       message: "Something Went very Wrong",
     });
   }
-};
+}
+
+
 
 module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
-  err.status = err.status || "error";
+  err.status = err.status || "error"; 
 
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err,req,res);
   } else if (process.env.NODE_ENV === 'production') {
 
     let error = { ...err };
-    
-    console.log('its working ',error);
+    error.message = err.message; 
 
     // Cast Error Controller handleCastErrorDB-> Related to DB / handleCastErrorDB is assigned to the middleware err
     if(err.name === 'CastError') error = handleCastErrorDB(error);
@@ -82,7 +105,7 @@ module.exports = (err, req, res, next) => {
     if(err.name === 'JsonWebTokenError') error = handleJWTError(error);
     if(err.name === 'TokenExpiredError') error = handleJWTExpiredError(error);
 
-    sendErrorprod(error,req , res);
+    sendErrorprod(error,req,res);
   }
 };
 

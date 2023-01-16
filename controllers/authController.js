@@ -161,6 +161,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // Grand Access to protected Route
   req.user = currentUser;
+  res.locals.user = currentUser;
 
   next();
 });

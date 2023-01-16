@@ -51,7 +51,7 @@ app.use('/api',limiter);
 
 // Body Parser, reading data from the Body into req.body
 app.use(express.json({limit:'10kb'}));
-
+app.use(express.urlencoded({extended:true,limit:'10kb'}))
 // cookie Parser , reading data from cookie 
 app.use(cookieParser())
  
@@ -87,7 +87,7 @@ app.use('/api/v1/tours',tourRoute);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/reviews',reviewRoute);
 
-app.all('*',(req,res,next)=>{
+app.all('*',(req, res,next)=>{
   next(new AppError(`Cant find ${req.originalUrl} on this server`,404));
 });
 
