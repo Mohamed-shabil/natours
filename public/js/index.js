@@ -37,9 +37,12 @@ if(logoutBtn) {
 if(userDataForm){
   userDataForm.addEventListener("submit", (e) =>{
     e.preventDefault();
-    const email = document.getElementById('email').value;
-    const name = document.getElementById('name').value;
-    updateSettings({name,email},'data');
+    const form = new FormData();
+    form.append('name',document.getElementById('name').value)
+    form.append('email',document.getElementById('email').value)
+    form.append('photo',document.getElementById('photo').files[0]);
+    console.log(form); 
+    updateSettings(form,'data');
   })
 }
 
@@ -53,8 +56,8 @@ if(userPasswordForm){
     
     await updateSettings({passwordCurrent, password,passwordConfirm},'password');
     document.querySelector('.btn--save-password').textContent= 'Save Password';
-    document.getElementById('password-current').value = ''
+    document.getElementById('password-current').value =''
     document.getElementById('password').value = ''
-    document.getElementById('password-confirm').value = ''
+    document.getElementById('password-confirm').value =''
   })
 }
