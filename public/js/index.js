@@ -1,6 +1,7 @@
 import '@babel/polyfill';
 import { displayMap } from './mapbox';
 import { login, logout } from './login';
+import {signup} from './signup';
 import {updateSettings} from './updateSettings';
 
 // DOM Elements
@@ -10,6 +11,7 @@ const loginForm = document.querySelector('.form--login');
 const logoutBtn = document.querySelector('.nav__el--logout');
 const userDataForm = document.querySelector('.form-user-data');
 const userPasswordForm = document.querySelector('.form-user-password');
+const signupForm = document.querySelector('.form--signup');
 
 
 // Delegation
@@ -41,7 +43,7 @@ if(userDataForm){
     form.append('name',document.getElementById('name').value)
     form.append('email',document.getElementById('email').value)
     form.append('photo',document.getElementById('photo').files[0]);
-    console.log(form); 
+    console.log(form);
     updateSettings(form,'data');
   })
 }
@@ -56,8 +58,21 @@ if(userPasswordForm){
     
     await updateSettings({passwordCurrent, password,passwordConfirm},'password');
     document.querySelector('.btn--save-password').textContent= 'Save Password';
-    document.getElementById('password-current').value =''
-    document.getElementById('password').value = ''
-    document.getElementById('password-confirm').value =''
+    document.getElementById('password-current').value ='';
+    document.getElementById('password').value = '';
+    document.getElementById('password-confirm').value ='';
+  })
+}
+
+if(signupForm){
+  signupForm.addEventListener("submit", async e =>{
+    e.preventDefault();
+    console.log('signup......');
+    const name = document.getElementById('name-signup').value;
+    const email = document.getElementById('email-signup').value;
+    const password = document.getElementById('password-signup').value;
+    const passwordConfirm = document.getElementById('passwordConfirm-signup').value;
+    console.log(name, email,  password, passwordConfirm);
+    await signup(name,email,password,passwordConfirm);
   })
 }
